@@ -4,7 +4,8 @@
 
 在游戏社区页面补充展示各游戏日常便笺的完整内容，不干扰 AUTO-MAS 自带的活动展示。
 
-依赖核心插件「SignFlow 游戏社区」（服务名 `signflow.community`）；核心插件未启用时，本插件无法启用。
+依赖核心插件「SignFlow 游戏社区」提供的服务 `signflow.activity`；核心插件未启用时，本插件无法启用。
+本插件自己不开 HTTP 端点，查询由核心插件代发 `POST /api/plugin/signflow/notes/query`。
 
 ## 许可证
 

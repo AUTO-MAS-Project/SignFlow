@@ -11,7 +11,13 @@ SignFlow 是 AUTO-MAS 的游戏社区核心插件。它把账号、平台协议�
 | 抽卡记录 | `signflow-gacha` | 抽卡记录（首批仅明日方舟） |
 | Token 获取 | `signflow-token` | 扫码 / 短信 / 账密获取社区 Token |
 
-三个附属插件都通过服务名 `signflow.community` 依赖本插件；未启用本插件时它们无法启用。
+本插件对外提供服务名如下，附属插件按需声明，未启用本插件时它们无法启用：
+
+| 服务名 | 内容 |
+| --- | --- |
+| `signflow.community` | 账号与凭据门面（平台字段清单以本体内置注册表为准） |
+| `signflow.activity` | 日常便笺查询（转发宿主 `Community`，自带缓存与串行锁） |
+| `signflow.notes` | 由日常便笺附属插件提供，核心插件代发 `POST /api/plugin/signflow/notes/query` |
 
 ## 安装
 

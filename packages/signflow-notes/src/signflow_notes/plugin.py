@@ -23,23 +23,39 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from auto_mas_core import ExtensionPlugin
+
+from .notes import NotesFacade
 
 
 class Plugin(ExtensionPlugin):
     """SignFlow 日常便笺附属插件。
 
-    只声明对核心插件服务 `signflow.community` 的依赖；具体能力在后续步骤补齐。
+    依赖核心插件服务 `signflow.activity`：便笺数据由 AUTO-MAS 本体采集，
+    核心插件负责把宿主 `Community` 的查询能力暴露出来，本插件只做形状收敛。
+    不直接依赖 `signflow.community`（账号与凭据），因为便笺用不到凭据。
     """
 
-    requires = ("signflow.community",)
+    requires = ("signflow.activity",)
 
-    provides_services = {"signflow.notes": "notes"}
+    provides_services = {"signflow.notes": "query_notes"}
 
-    def notes(self) -> dict[str, str]:
-        """返回本插件的服务标识。
+    def __init__(self, config=None, record=None):
+        """初始化便笺插件，持有唯一的便笺门面实例。"""
 
-        核心插件通过服务名定位附属插件，骨架阶段只暴露身份信息。
+        super().__init__(config=config, record=record)
+        self._notes = NotesFacade()
+
+    async def query_notes(
+        self, account_ids: Iterable[str] | None = None
+    ) -> tuple[dict[str, object], ...]:
+        """按账号组查询日常便笺，由核心插件对外代发。
+
+        暴露成协程而不是「返回门面再调用」：宿主 `CallGate` 只包住服务方法
+        本身，只有这样插件停用时才会等到在途查询真正结束。门面不持状态，
+        宿主已经缓存快照，这里再存一份只会让两边的失效时机打架。
         """
 
-        return {"plugin": self.plugin_name, "api": "signflow.notes"}
+        return await self._notes.snapshots(account_ids)

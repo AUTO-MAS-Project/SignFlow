@@ -10,7 +10,13 @@ AUTO-MAS 的游戏社区插件集合。游戏社区本体能力由本仓库的�
 | `packages/signflow-gacha` | `signflow-gacha` | `signflow_gacha` | 抽卡记录（首批仅森空岛明日方舟） |
 | `packages/signflow-token` | `signflow-token` | `signflow_token` | Token 获取（扫码 / 短信 / 账密），受神秘入口授权门禁 |
 
-三个附属插件都依赖核心插件提供的服务 `signflow.community`；核心插件未启用时它们无法启用。
+附属插件按服务名依赖核心插件，核心插件未启用时它们无法启用：
+
+| 附属插件 | 依赖的服务 | 说明 |
+| --- | --- | --- |
+| 日常便笺 | `signflow.activity` | 只读便笺查询，用不到凭据 |
+| 抽卡记录 | `signflow.community` | 需要账号与平台凭据 |
+| Token 获取 | `signflow.community` | 需要读写账号与凭据 |
 
 ## 前端在哪里
 

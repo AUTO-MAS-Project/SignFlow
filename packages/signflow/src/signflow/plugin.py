@@ -23,28 +23,45 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
+from fastapi import APIRouter
+
 from auto_mas_core import ExtensionPlugin
 
 from .accounts import CommunityFacade
+from .activity import ActivityFacade
+from .api import router as community_router
 from .config import SignFlowConfig
 
 
 class Plugin(ExtensionPlugin):
     """游戏社区核心插件。
 
-    只提供账号与平台协议门面，不直接执行签到；签到由本体内置流程完成。
+    只提供账号、日常便笺与平台协议门面，不直接执行签到；签到由本体内置流程完成。
     """
 
     config_class = SignFlowConfig
 
+    # 附属插件不自己开 HTTP 端点：宿主只认插件自有前缀，前端也只需要记住
+    # 一个 /api/plugin/signflow。便笺等查询能力由本插件代发，插件被停用时
+    # 仍能返回一条用户看得懂的失败原因。
+    api_router = APIRouter()
+    api_router.include_router(community_router)
+
     # 附属插件（便笺 / 抽卡 / Token）以服务名依赖本插件，未启用时无法启用。
-    provides_services = {"signflow.community": "community"}
+    # 一个能力一个服务名：附属插件只声明自己真正要用的那一个，接口面越小越不容易被误用。
+    provides_services = {
+        "signflow.community": "community",
+        "signflow.activity": "query_activity",
+    }
 
     def __init__(self, config=None, record=None):
-        """初始化核心插件，预先持有唯一的账号门面实例。"""
+        """初始化核心插件，预先持有唯一的账号门面与便笺门面实例。"""
 
         super().__init__(config=config, record=record)
         self._facade = CommunityFacade()
+        self._activity = ActivityFacade()
 
     def community(self) -> CommunityFacade:
         """返回社区账号与凭据门面，供附属插件取用。
@@ -54,3 +71,14 @@ class Plugin(ExtensionPlugin):
         """
 
         return self._facade
+
+    async def query_activity(
+        self, account_ids: Iterable[str] | None = None
+    ) -> tuple[dict[str, object], ...]:
+        """按账号组查询日常便笺，供附属插件取用。
+
+        暴露成协程而不是「返回门面再调用」：宿主 `CallGate` 只包住服务方法
+        本身，只有这样插件停用时才会等到在途查询真正结束。
+        """
+
+        return await self._activity.snapshots(account_ids)
