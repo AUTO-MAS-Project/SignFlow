@@ -21,7 +21,7 @@ Better-MAS-Tools 自身记录的上游（移植其抽卡、扫码与账号相关
 | [Womsxd/mihoyo_login](https://github.com/Womsxd/mihoyo_login) | 米游社扫码登录 | 见上游仓库 |
 | [mxyooR/Kuro_login](https://github.com/mxyooR/Kuro_login) | 库街区登录 | 见上游仓库 |
 | [erzaozi/waves-plugin](https://github.com/erzaozi/waves-plugin) | 鸣潮抽卡记录协议 | AGPL-3.0 |
-| [gxy12345/arknights-plugin](https://github.com/gxy12345/arknights-plugin) | 明日方舟抽卡记录协议 | AGPL-3.0 |
+| [gxy12345/arknights-plugin](https://github.com/gxy12345/arknights-plugin) | 明日方舟角色授权与寻访记录协议 | MIT |
 | [bhaoo/endfield-gacha](https://github.com/bhaoo/endfield-gacha) | 终末地抽卡记录协议 | 见上游仓库 |
 | [Ljzd-PRO/nonebot-plugin-mystool](https://github.com/Ljzd-PRO/nonebot-plugin-mystool) | 米游社便笺协议 | MIT |
 | [Scighost/Starward](https://github.com/Scighost/Starward) | 米游社凭据处理思路 | MIT |

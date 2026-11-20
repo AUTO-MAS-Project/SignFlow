@@ -11,3 +11,5 @@
 - 新增 `signflow-notes` 日常便笺、`signflow-gacha` 抽卡记录、`signflow-token` Token 获取三个附属插件骨架，均依赖核心插件服务。
 - 核心插件新增 `signflow.activity` 服务与 `POST /api/plugin/signflow/notes/query` 代发端点。
 - `signflow-notes` 日常便笺插件接通核心插件，输出与前端 `ActivitySnapshot` 一致的驼峰投影。
+- `signflow-gacha` 抽卡记录插件落框架：记录模型、本地存档、森空岛明日方舟寻访协议与保底统计。
+- 核心插件新增 `GET /api/plugin/signflow/gacha/games`、`POST /api/plugin/signflow/gacha/query`、`POST /api/plugin/signflow/gacha/fetch` 三个代发端点。
