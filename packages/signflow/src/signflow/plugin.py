@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from auto_mas_core import ExtensionPlugin
 
+from .accounts import CommunityFacade
 from .config import SignFlowConfig
 
 
@@ -39,11 +40,17 @@ class Plugin(ExtensionPlugin):
     # 附属插件（便笺 / 抽卡 / Token）以服务名依赖本插件，未启用时无法启用。
     provides_services = {"signflow.community": "community"}
 
-    def community(self) -> dict[str, str]:
-        """返回社区门面标识。
+    def __init__(self, config=None, record=None):
+        """初始化核心插件，预先持有唯一的账号门面实例。"""
 
-        骨架阶段只暴露身份信息，具体能力在后续步骤挂到同一个服务名下，
-        避免附属插件反复改动依赖声明。
+        super().__init__(config=config, record=record)
+        self._facade = CommunityFacade()
+
+    def community(self) -> CommunityFacade:
+        """返回社区账号与凭据门面，供附属插件取用。
+
+        门面是无状态只读投影，每次调用返回同一实例，避免附属插件各自
+        复制一份账号字段清单。
         """
 
-        return {"plugin": self.plugin_name, "api": "signflow.community"}
+        return self._facade
