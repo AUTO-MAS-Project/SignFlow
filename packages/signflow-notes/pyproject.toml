@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signflow-notes"
+version = "0.1.0"
+description = "在游戏社区页面补充展示各游戏日常便笺的完整内容，不干扰 AUTO-MAS 自带的活动展示。"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "AGPL-3.0-or-later"
+authors = [{ name = "AUTO-MAS Team" }]
+keywords = ["auto-mas-plugin", "auto-mas-id:signflow_notes"]
+dependencies = ["auto-mas-core>=5.9.0b1,<6", "signflow>=0.1.0,<0.2"]
+
+[project.urls]
+Homepage = "https://github.com/AUTO-MAS-Project/SignFlow"
+Repository = "https://github.com/AUTO-MAS-Project/SignFlow"
+Documentation = "https://doc.auto-mas.top/developer/"
+Changelog = "https://github.com/AUTO-MAS-Project/SignFlow/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+signflow_notes = ["py.typed", "i18n/*.json"]

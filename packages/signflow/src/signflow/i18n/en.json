@@ -1,0 +1,6 @@
+{
+  "plugins.signflow.market.name": "SignFlow Community",
+  "plugins.signflow.market.summary": "Core plugin providing accounts, platform protocols and the community data facade.",
+  "plugins.signflow.config.cache.title": "Community data cache",
+  "plugins.signflow.config.cache.activityTtl": "Daily note cache TTL (seconds)"
+}

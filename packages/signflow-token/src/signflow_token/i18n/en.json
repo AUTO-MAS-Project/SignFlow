@@ -1,0 +1,4 @@
+{
+  "plugins.signflow_token.market.name": "SignFlow Token Access",
+  "plugins.signflow_token.market.summary": "Obtains game community tokens via QR code, SMS or credentials. Credentials stay on this machine."
+}

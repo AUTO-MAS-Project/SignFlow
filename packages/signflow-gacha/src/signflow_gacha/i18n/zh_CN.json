@@ -1,0 +1,4 @@
+{
+  "plugins.signflow_gacha.market.name": "SignFlow 抽卡记录",
+  "plugins.signflow_gacha.market.summary": "记录并展示抽卡结果，首批接入森空岛明日方舟，其他游戏按 tag 分页预留。"
+}

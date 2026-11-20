@@ -1,0 +1,4 @@
+{
+  "plugins.signflow_token.market.name": "SignFlow Token 获取",
+  "plugins.signflow_token.market.summary": "通过扫码、短信或账密获取各游戏社区 Token，凭据仅保存在本机。"
+}

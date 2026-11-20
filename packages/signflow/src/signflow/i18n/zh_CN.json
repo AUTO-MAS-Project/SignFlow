@@ -1,0 +1,6 @@
+{
+  "plugins.signflow.market.name": "SignFlow 游戏社区",
+  "plugins.signflow.market.summary": "游戏社区核心插件，统一提供账号、平台协议与社区数据门面。",
+  "plugins.signflow.config.cache.title": "社区数据缓存",
+  "plugins.signflow.config.cache.activityTtl": "日常便笺缓存有效期（秒）"
+}

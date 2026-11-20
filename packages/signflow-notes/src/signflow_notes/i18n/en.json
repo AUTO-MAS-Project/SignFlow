@@ -1,0 +1,4 @@
+{
+  "plugins.signflow_notes.market.name": "SignFlow Daily Notes",
+  "plugins.signflow_notes.market.summary": "Shows the full in-game daily note content on the community page without interfering with AUTO-MAS activity feeds."
+}

@@ -1,0 +1,4 @@
+{
+  "plugins.signflow_notes.market.name": "SignFlow 日常便笺",
+  "plugins.signflow_notes.market.summary": "在游戏社区页面补充展示各游戏日常便笺的完整内容，不干扰 AUTO-MAS 自带的活动展示。"
+}
