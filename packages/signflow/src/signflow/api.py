@@ -211,7 +211,12 @@ async def query_gacha_records(payload: GachaQueryIn = Body(...)) -> GachaQueryOu
 
 @router.post("/gacha/fetch", summary="读取抽卡记录", response_model=GachaFetchOut)
 async def fetch_gacha_records(payload: GachaFetchIn = Body(...)) -> GachaFetchOut:
-    """读取一个角色的抽卡记录并入库存档。"""
+    """读取一个角色的抽卡记录并入库存档。
+
+    只由用户点「获取记录」时调用一次：后端不排定时任务、不在启用时预热，
+    也不在读取成功后自己再拉一轮。刷新列表请用 `/gacha/query`，它只读本地
+    存档，不打上游接口。
+    """
 
     fetch_service, reason = _gacha_service("signflow.gacha.fetch")
     if fetch_service is None:

@@ -225,3 +225,18 @@ def test_fetch_rejects_while_another_read_is_running(tmp_path) -> None:
                 )
 
     asyncio.run(run())
+
+
+def test_query_never_touches_the_store_through_upstream(tmp_path) -> None:
+    """列表查询只读本地存档：不给它凭据也能出结果，证明不会顺手打上游。
+
+    这是「抽卡不自动刷新」的落地守护：如果哪天有人在 query 里加了拉取，
+    没登记账号的实现会立刻失败。
+    """
+
+    facade = _facade(tmp_path, [_record(id="1", time="2026-01-01 12:00:00")])
+
+    result = facade.query("arknights")
+
+    assert result["total"] == 1
+    assert result["data"][0]["id"] == "1"
