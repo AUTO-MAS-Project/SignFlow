@@ -20,9 +20,9 @@
 #   Contact: DLmaster_361@163.com
 """核心插件对外接口：附属插件的查询能力统一由本插件代发。
 
-便笺与抽卡插件自己不开 HTTP 端点，本模块按服务名取用它们的实现。这样前端
-只需要认识核心插件一个前缀，附属插件被停用时这里会明确告知原因，而不是留下
-一个 404 让调用方猜。
+便笺、抽卡与 Token 插件自己不开 HTTP 端点，本模块按服务名取用它们的实现。
+这样前端只需要认识核心插件一个前缀，附属插件被停用时这里会明确告知原因，
+而不是留下一个 404 让调用方猜。
 """
 
 from __future__ import annotations
@@ -139,17 +139,23 @@ class GachaGamesOut(OutBase):
     games: list[str] = Field(default_factory=list)
 
 
-def _gacha_service(name: str):
-    """按服务名取抽卡插件的能力，缺失时同时给出可直接展示的原因。
+def _service(name: str, reason: str):
+    """按服务名取附属插件的能力，缺失时同时给出可直接展示的原因。
 
-    抽卡插件未安装或未启用属于正常状态（用户没装），不是错误，所以返回
+    附属插件未安装或未启用属于正常状态（用户没装），不是错误，所以返回
     (None, 原因) 而不是抛异常，由调用方决定怎么回话。
     """
 
     try:
         return Plugin.services.require(name), ""
     except PluginError:
-        return None, "抽卡记录插件未启用"
+        return None, reason
+
+
+def _gacha_service(name: str):
+    """按服务名取抽卡插件的能力。"""
+
+    return _service(name, "抽卡记录插件未启用")
 
 
 @router.get(
@@ -235,4 +241,90 @@ async def fetch_gacha_records(payload: GachaFetchIn = Body(...)) -> GachaFetchOu
         added=added,
         fetched=fetched,
         warnings=warnings,
+    )
+
+
+class TokenStatusIn(BaseModel):
+    """凭据状态盘点入参。"""
+
+    accountIds: list[str] | None = Field(
+        default=None, description="账号组 UID 列表，留空表示全部账号组"
+    )
+
+
+class TokenStatusOut(OutBase):
+    """各账号的凭据状态。
+
+    每一项只描述「配没配、格式对不对」，不含凭据原文：Token 从插件出到
+    界面只会以状态码的形式出现，避免刷一次页面就把明文送到前端。
+    """
+
+    data: list[dict[str, object]] = Field(default_factory=list)
+
+
+class TokenRefreshIn(BaseModel):
+    """凭据刷新入参。
+
+    不含任何授权材料：账号组 UID 定位账号，凭据由插件经账号门面从账号组取。
+    """
+
+    accountUid: str = Field(min_length=1, max_length=64, description="账号组 UID")
+    fields: list[str] | None = Field(
+        default=None, description="指定要刷新的凭据字段，留空表示全部已配置字段"
+    )
+
+
+class TokenRefreshOut(OutBase):
+    """凭据刷新结果；单个平台失败不影响其它平台。"""
+
+    uid: str = ""
+    items: list[dict[str, object]] = Field(default_factory=list)
+
+
+@router.post("/token/status", summary="盘点凭据状态", response_model=TokenStatusOut)
+async def query_token_status(payload: TokenStatusIn = Body(...)) -> TokenStatusOut:
+    """按账号组盘点各平台社区凭据的配置与格式状态。"""
+
+    service, reason = _service("signflow.token", "Token 获取插件未启用")
+    if service is None:
+        return TokenStatusOut(code=400, status="error", message=reason)
+
+    try:
+        data = await service(payload.accountIds)
+    except ValueError as error:
+        return TokenStatusOut(code=400, status="error", message=str(error))
+    except Exception:
+        logger.opt(exception=True).warning("凭据状态盘点失败")
+        return TokenStatusOut(code=500, status="error", message="凭据状态盘点失败")
+
+    return TokenStatusOut(message=f"共 {len(data)} 个账号组", data=list(data))
+
+
+@router.post("/token/refresh", summary="刷新凭据", response_model=TokenRefreshOut)
+async def refresh_token_credential(
+    payload: TokenRefreshIn = Body(...),
+) -> TokenRefreshOut:
+    """刷新指定账号组的社区凭据并写回。"""
+
+    service, reason = _service("signflow.token.refresh", "Token 获取插件未启用")
+    if service is None:
+        return TokenRefreshOut(code=400, status="error", message=reason)
+
+    try:
+        result = await service(payload.accountUid, payload.fields)
+    except ValueError as error:
+        # 账号不存在、没有可刷新凭据等都可直接展示给用户。
+        return TokenRefreshOut(code=400, status="error", message=str(error))
+    except Exception:
+        logger.opt(exception=True).warning("凭据刷新失败")
+        return TokenRefreshOut(code=500, status="error", message="凭据刷新失败")
+
+    items = list(result.get("items") or [])
+    failed = [item for item in items if not item.get("refreshed")]
+    return TokenRefreshOut(
+        code=200,
+        status="partial" if failed else "success",
+        message=f"共刷新 {len(items)} 项，失败 {len(failed)} 项",
+        uid=str(result.get("uid") or ""),
+        items=items,
     )

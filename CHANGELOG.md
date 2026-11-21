@@ -13,3 +13,5 @@
 - `signflow-notes` 日常便笺插件接通核心插件，输出与前端 `ActivitySnapshot` 一致的驼峰投影。
 - `signflow-gacha` 抽卡记录插件落框架：记录模型、本地存档、森空岛明日方舟寻访协议与保底统计。
 - 核心插件新增 `GET /api/plugin/signflow/gacha/games`、`POST /api/plugin/signflow/gacha/query`、`POST /api/plugin/signflow/gacha/fetch` 三个代发端点。
+- `signflow-token` Token 获取插件落地：凭据状态盘点与刷新写回，森空岛 / 米游社 / 塔吉多可自动续期，其余平台如实报告暂不支持。
+- 核心插件新增 `POST /api/plugin/signflow/token/status`、`POST /api/plugin/signflow/token/refresh` 两个代发端点。

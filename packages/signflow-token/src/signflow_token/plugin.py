@@ -23,23 +23,44 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
+
 from auto_mas_core import ExtensionPlugin
+
+from .credentials import TokenFacade
 
 
 class Plugin(ExtensionPlugin):
     """SignFlow Token 获取附属插件。
 
-    只声明对核心插件服务 `signflow.community` 的依赖；具体能力在后续步骤补齐。
+    只声明对核心插件服务 `signflow.community` 的依赖：账号列表、凭据字段、
+    平台名和代理一律经核心插件门面取，本插件不自己读宿主配置。
     """
 
     requires = ("signflow.community",)
 
-    provides_services = {"signflow.token": "token"}
+    provides_services = {
+        "signflow.token": "credential_status",
+        "signflow.token.refresh": "refresh_credential",
+    }
 
-    def token(self) -> dict[str, str]:
-        """返回本插件的服务标识。
+    def __init__(self, config=None, record=None) -> None:
+        super().__init__(config=config, record=record)
+        self._tokens = TokenFacade()
 
-        核心插件通过服务名定位附属插件，骨架阶段只暴露身份信息。
+    async def credential_status(
+        self, account_ids: Iterable[str] | None = None
+    ) -> tuple[dict[str, object], ...]:
+        """盘点各账号的社区凭据配置与格式状态。
+
+        做成协程与其他附属插件服务保持一致：调用方不必为哪个同步哪个异步分叉。
         """
 
-        return {"plugin": self.plugin_name, "api": "signflow.token"}
+        return self._tokens.status(account_ids)
+
+    async def refresh_credential(
+        self, account_uid: str, fields: Iterable[str] | None = None
+    ) -> dict[str, object]:
+        """刷新指定账号的凭据并写回账号组。"""
+
+        return await self._tokens.refresh(account_uid, fields)

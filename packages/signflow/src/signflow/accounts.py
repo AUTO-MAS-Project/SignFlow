@@ -80,6 +80,20 @@ class CommunityFacade:
 
         return _sign.get_community_token_field(platform)
 
+    def platforms(self) -> tuple[tuple[str, str], ...]:
+        """返回（凭据字段名，平台显示名）的对照，顺序与平台注册表一致。
+
+        附属插件需要把字段名翻成用户看得懂的平台名时走这里，不要自己写
+        第二份对照表：宿主新增平台时这份对照自动跟着变。
+        """
+
+        from app.tools.common.community import sign as _sign
+
+        return tuple(
+            (provider.token_field, provider.log_name)
+            for provider in _sign.get_community_sign_providers()
+        )
+
     def accounts(self) -> tuple[CommunityAccount, ...]:
         """按账号组顺序返回全部社区账号的只读投影。"""
 
