@@ -18,7 +18,12 @@
 #   along with SignFlow. If not, see <https://www.gnu.org/licenses/>.
 
 #   Contact: DLmaster_361@163.com
-"""极验 w 参数编码：随机 key 走 RSA，轨迹 JSON 走 AES-CBC。"""
+
+"""极验 w 参数编码：随机 key 走 RSA，轨迹 JSON 走 AES-CBC。
+
+移植自 Better-MAS-Tools 的 app/tools/_geetest/utils.py（AGPL-3.0），
+原始实现见 mxyooR/Kuro_login（MIT）。
+"""
 
 from __future__ import annotations
 

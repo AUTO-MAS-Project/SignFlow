@@ -18,7 +18,12 @@
 #   along with SignFlow. If not, see <https://www.gnu.org/licenses/>.
 
 #   Contact: DLmaster_361@163.com
-"""极验 v4 请求常量。"""
+
+"""极验 v4 请求常量。
+
+RSA 公钥与 captcha_id 取自 mxyooR/Kuro_login（MIT），经 Better-MAS-Tools
+（AGPL-3.0）的 app/tools/_geetest/consts.py 转述。
+"""
 
 from __future__ import annotations
 
