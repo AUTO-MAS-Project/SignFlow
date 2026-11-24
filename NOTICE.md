@@ -19,7 +19,7 @@ Better-MAS-Tools 自身记录的上游（移植其抽卡、扫码与账号相关
 | --- | --- | --- |
 | [Womsxd/MihoyoBBSTools](https://github.com/Womsxd/MihoyoBBSTools) | 米游社社区协议 | MIT |
 | [Womsxd/mihoyo_login](https://github.com/Womsxd/mihoyo_login) | 米游社扫码登录 | 见上游仓库 |
-| [mxyooR/Kuro_login](https://github.com/mxyooR/Kuro_login) | 库街区登录 | 见上游仓库 |
+| [mxyooR/Kuro_login](https://github.com/mxyooR/Kuro_login) | 库街区短信登录与极验（滑块、图标识别）的实现 | MIT |
 | [erzaozi/waves-plugin](https://github.com/erzaozi/waves-plugin) | 鸣潮抽卡记录协议 | AGPL-3.0 |
 | [gxy12345/arknights-plugin](https://github.com/gxy12345/arknights-plugin) | 明日方舟角色授权与寻访记录协议 | MIT |
 | [bhaoo/endfield-gacha](https://github.com/bhaoo/endfield-gacha) | 终末地抽卡记录协议 | 见上游仓库 |
@@ -35,6 +35,13 @@ Better-MAS-Tools 自身记录的上游（移植其抽卡、扫码与账号相关
 | [ArknightsGameResource](https://github.com/yuanyan3060/ArknightsGameResource) | 明日方舟资源，运行期读取不复制 | AGPL-3.0 |
 | [PRTS Wiki](https://prts.wiki) | 明日方舟资料 | CC BY-NC-SA 4.0 |
 | ef-webview.hypergryph.com | 抽卡记录 Webview | 官方接口 |
+
+## 第三方服务
+
+| 服务 | 用途 | 说明 |
+| --- | --- | --- |
+| [极验 GeeTest](https://www.geetest.com/) | 库街区短信登录的人机验证 | 由用户浏览器完成，密钥随游戏社区官方页面下发 |
+| [云码 jfbym](https://www.jfbym.com/) | 图标类验证码的可选自动识别 | 仅在用户自行填写密钥后启用，图片转发给该服务识别 |
 
 ## 免责声明
 

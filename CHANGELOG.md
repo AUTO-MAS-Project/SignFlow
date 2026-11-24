@@ -16,3 +16,5 @@
 - `signflow-gacha` 抽卡记录读取只由用户手动触发，不排定时任务、不在启用时预热，避免频繁请求触发风控。
 - `signflow-token` Token 获取插件落地：凭据状态盘点与刷新写回，森空岛 / 米游社 / 塔吉多可自动续期，其余平台如实报告暂不支持。
 - 核心插件新增 `POST /api/plugin/signflow/token/status`、`POST /api/plugin/signflow/token/refresh` 两个代发端点。
+- `signflow-token` 新增库街区短信登录：自带极验（滑块本地识别、图标可选云码）、发码与换凭据，登录结果直接写回账号组。
+- 核心插件新增 `POST /api/plugin/signflow/token/login/open`、`/send`、`/submit` 三个代发端点。

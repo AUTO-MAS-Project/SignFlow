@@ -25,10 +25,16 @@ from __future__ import annotations
 import asyncio
 
 from signflow.api import (
+    TokenLoginOpenIn,
+    TokenLoginSendIn,
+    TokenLoginSubmitIn,
     TokenRefreshIn,
     TokenStatusIn,
+    open_token_login,
     query_token_status,
     refresh_token_credential,
+    send_token_login_code,
+    submit_token_login_code,
 )
 
 
@@ -55,6 +61,9 @@ class _Services:
         mapping = {
             "signflow.token": "credential_status",
             "signflow.token.refresh": "refresh_credential",
+            "signflow.token.login": "open_login",
+            "signflow.token.login.send": "send_login_code",
+            "signflow.token.login.submit": "submit_login_code",
         }
         return getattr(self._plugin, mapping[name])
 
@@ -67,10 +76,16 @@ class _Plugin:
         *,
         status_result=None,
         refresh_result=None,
+        open_result=None,
+        send_result=None,
+        submit_result=None,
         error=None,
     ) -> None:
         self._status_result = status_result
         self._refresh_result = refresh_result
+        self._open_result = open_result or {}
+        self._send_result = send_result or {}
+        self._submit_result = submit_result or {}
         self._error = error
 
     async def credential_status(self, account_ids=None):
@@ -86,6 +101,27 @@ class _Plugin:
         if self._error is not None:
             raise self._error
         return self._refresh_result or {}
+
+    async def open_login(self, account_uid, phone):
+        """返回预置的会话开启结果。"""
+
+        if self._error is not None:
+            raise self._error
+        return self._open_result
+
+    async def send_login_code(self, session_id, verification=None, *, automatic=False):
+        """返回预置的短信发送结果。"""
+
+        if self._error is not None:
+            raise self._error
+        return self._send_result
+
+    async def submit_login_code(self, session_id, code):
+        """返回预置的登录结果。"""
+
+        if self._error is not None:
+            raise self._error
+        return self._submit_result
 
 
 def _patch(monkeypatch, services) -> None:
@@ -233,3 +269,124 @@ def test_refresh_reports_missing_plugin(monkeypatch) -> None:
 
     assert result.code == 400
     assert result.message == "Token 获取插件未启用"
+
+
+def test_login_open_returns_session_and_captcha_id(monkeypatch) -> None:
+    """开窗成功后前端拿会话号与极验标识，手机号不回显。"""
+
+    _patch(
+        monkeypatch,
+        _Services(
+            _Plugin(open_result={"sessionId": "s1", "captchaId": "cid"}),
+        ),
+    )
+
+    result = asyncio.run(
+        open_token_login(TokenLoginOpenIn(accountUid="a", phone="13800000000"))
+    )
+
+    assert result.code == 200
+    assert result.sessionId == "s1"
+    assert result.captchaId == "cid"
+    assert "13800000000" not in result.model_dump_json()
+
+
+def test_login_open_reports_missing_plugin(monkeypatch) -> None:
+    """Token 插件没装时开窗回未启用。"""
+
+    _patch(monkeypatch, _Missing())
+
+    result = asyncio.run(
+        open_token_login(TokenLoginOpenIn(accountUid="a", phone="13800000000"))
+    )
+
+    assert result.code == 400
+    assert result.message == "Token 获取插件未启用"
+
+
+def test_login_send_marks_partial_when_auto_failed(monkeypatch) -> None:
+    """自动验证没跑通时 sent=False，状态是 partial 而不是错误。"""
+
+    _patch(
+        monkeypatch,
+        _Services(_Plugin(send_result={"sent": False, "message": "请完成人工验证"})),
+    )
+
+    result = asyncio.run(
+        send_token_login_code(
+            TokenLoginSendIn(sessionId="s1", automatic=True),
+        )
+    )
+
+    assert result.code == 200
+    assert result.status == "partial"
+    assert result.sent is False
+    assert result.message == "请完成人工验证"
+
+
+def test_login_send_reports_success(monkeypatch) -> None:
+    """短信发出后状态是 success。"""
+
+    _patch(
+        monkeypatch,
+        _Services(_Plugin(send_result={"sent": True, "message": "短信已发送"})),
+    )
+
+    result = asyncio.run(
+        send_token_login_code(
+            TokenLoginSendIn(sessionId="s1", automatic=True),
+        )
+    )
+
+    assert result.status == "success"
+    assert result.sent is True
+
+
+def test_login_send_passes_value_error_through(monkeypatch) -> None:
+    """验证材料过期等可读原因原样上抛。"""
+
+    _patch(monkeypatch, _Services(_Plugin(error=ValueError("请先完成人机验证"))))
+
+    result = asyncio.run(send_token_login_code(TokenLoginSendIn(sessionId="s1")))
+
+    assert result.code == 400
+    assert result.message == "请先完成人机验证"
+
+
+def test_login_submit_returns_saved_field(monkeypatch) -> None:
+    """登录成功回账号 UID 与写回的字段名，不回显凭据。"""
+
+    _patch(
+        monkeypatch,
+        _Services(
+            _Plugin(
+                submit_result={
+                    "uid": "a",
+                    "field": "KuroToken",
+                    "message": "库街区凭据已保存",
+                }
+            )
+        ),
+    )
+
+    result = asyncio.run(
+        submit_token_login_code(TokenLoginSubmitIn(sessionId="s1", code="123456"))
+    )
+
+    assert result.code == 200
+    assert result.uid == "a"
+    assert result.field == "KuroToken"
+    assert result.message == "库街区凭据已保存"
+
+
+def test_login_submit_hides_internal_error(monkeypatch) -> None:
+    """未知异常只回一句通用结论。"""
+
+    _patch(monkeypatch, _Services(_Plugin(error=RuntimeError("boom"))))
+
+    result = asyncio.run(
+        submit_token_login_code(TokenLoginSubmitIn(sessionId="s1", code="123456"))
+    )
+
+    assert result.code == 500
+    assert result.message == "提交短信验证码失败"

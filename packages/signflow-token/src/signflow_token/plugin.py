@@ -27,7 +27,9 @@ from collections.abc import Iterable
 
 from auto_mas_core import ExtensionPlugin
 
+from .config import TokenConfig
 from .credentials import TokenFacade
+from .login import LoginFacade
 
 
 class Plugin(ExtensionPlugin):
@@ -39,14 +41,26 @@ class Plugin(ExtensionPlugin):
 
     requires = ("signflow.community",)
 
+    config_class = TokenConfig
+
     provides_services = {
         "signflow.token": "credential_status",
         "signflow.token.refresh": "refresh_credential",
+        "signflow.token.login": "open_login",
+        "signflow.token.login.send": "send_login_code",
+        "signflow.token.login.submit": "submit_login_code",
     }
 
     def __init__(self, config=None, record=None) -> None:
         super().__init__(config=config, record=record)
         self._tokens = TokenFacade()
+        # 会话里带着手机号与在途凭据，只能随插件实例存活。
+        self._login = LoginFacade(lambda: self.config)
+
+    async def on_disable(self) -> None:
+        """停用插件时收掉在途短信登录，别让定时器打到已停用的实例上。"""
+
+        self._login.close()
 
     async def credential_status(
         self, account_ids: Iterable[str] | None = None
@@ -64,3 +78,24 @@ class Plugin(ExtensionPlugin):
         """刷新指定账号的凭据并写回账号组。"""
 
         return await self._tokens.refresh(account_uid, fields)
+
+    async def open_login(self, account_uid: str, phone: str) -> dict[str, object]:
+        """开启一次库街区短信登录会话，返回会话号与极验标识。"""
+
+        return await self._login.open(account_uid, phone)
+
+    async def send_login_code(
+        self,
+        session_id: str,
+        verification: dict[str, str] | None = None,
+        *,
+        automatic: bool = False,
+    ) -> dict[str, object]:
+        """发送短信验证码；automatic=True 时先自己过一遍极验。"""
+
+        return await self._login.send(session_id, verification, automatic=automatic)
+
+    async def submit_login_code(self, session_id: str, code: str) -> dict[str, object]:
+        """提交短信验证码，成功后把库街区凭据写回账号组。"""
+
+        return await self._login.finish(session_id, code)

@@ -333,3 +333,138 @@ async def refresh_token_credential(
         uid=str(result.get("uid") or ""),
         items=items,
     )
+
+
+class TokenLoginOpenIn(BaseModel):
+    """开启短信登录会话的入参。"""
+
+    accountUid: str = Field(min_length=1, max_length=64, description="账号组 UID")
+    phone: str = Field(min_length=11, max_length=11, description="中国大陆手机号")
+
+
+class TokenLoginOpenOut(OutBase):
+    """会话号与极验标识；手机号不回显。"""
+
+    sessionId: str = ""
+    captchaId: str = ""
+
+
+class TokenLoginSendIn(BaseModel):
+    """发送验证码的入参。
+
+    `verification` 是极验页面回传的验证材料，`automatic=True` 时留空由插件
+    自己过极验，此时需要先在配置里填好云码密钥。
+    """
+
+    sessionId: str = Field(min_length=1, max_length=128, description="会话号")
+    verification: dict[str, str] | None = Field(
+        default=None, description="极验验证材料；自动验证时留空"
+    )
+    automatic: bool = Field(default=False, description="是否由插件自动完成极验")
+
+
+class TokenLoginSendOut(OutBase):
+    """短信发送结果；未发出时 message 说明该怎么走人工验证。"""
+
+    sent: bool = False
+
+
+class TokenLoginSubmitIn(BaseModel):
+    """提交短信验证码的入参。"""
+
+    sessionId: str = Field(min_length=1, max_length=128, description="会话号")
+    code: str = Field(min_length=6, max_length=6, description="六位短信验证码")
+
+
+class TokenLoginSubmitOut(OutBase):
+    """登录结果；成功后凭据已写回账号组，不回显凭据原文。"""
+
+    uid: str = ""
+    field: str = ""
+
+
+@router.post(
+    "/token/login/open", summary="开启短信登录", response_model=TokenLoginOpenOut
+)
+async def open_token_login(payload: TokenLoginOpenIn = Body(...)) -> TokenLoginOpenOut:
+    """为指定账号组开启一次库街区短信登录会话。"""
+
+    service, reason = _service("signflow.token.login", "Token 获取插件未启用")
+    if service is None:
+        return TokenLoginOpenOut(code=400, status="error", message=reason)
+
+    try:
+        result = await service(payload.accountUid, payload.phone)
+    except ValueError as error:
+        return TokenLoginOpenOut(code=400, status="error", message=str(error))
+    except Exception:
+        logger.opt(exception=True).warning("开启短信登录失败")
+        return TokenLoginOpenOut(code=500, status="error", message="开启短信登录失败")
+
+    return TokenLoginOpenOut(
+        message="请完成人机验证后发送短信",
+        sessionId=str(result.get("sessionId") or ""),
+        captchaId=str(result.get("captchaId") or ""),
+    )
+
+
+@router.post(
+    "/token/login/send", summary="发送短信验证码", response_model=TokenLoginSendOut
+)
+async def send_token_login_code(
+    payload: TokenLoginSendIn = Body(...),
+) -> TokenLoginSendOut:
+    """发送短信验证码。自动验证没跑通时返回 sent=False 而不是报错。"""
+
+    service, reason = _service("signflow.token.login.send", "Token 获取插件未启用")
+    if service is None:
+        return TokenLoginSendOut(code=400, status="error", message=reason)
+
+    try:
+        result = await service(
+            payload.sessionId, payload.verification, automatic=payload.automatic
+        )
+    except ValueError as error:
+        return TokenLoginSendOut(code=400, status="error", message=str(error))
+    except Exception:
+        logger.opt(exception=True).warning("发送短信验证码失败")
+        return TokenLoginSendOut(code=500, status="error", message="发送短信验证码失败")
+
+    sent = bool(result.get("sent"))
+    return TokenLoginSendOut(
+        code=200,
+        status="success" if sent else "partial",
+        message=str(result.get("message") or ""),
+        sent=sent,
+    )
+
+
+@router.post(
+    "/token/login/submit",
+    summary="提交短信验证码",
+    response_model=TokenLoginSubmitOut,
+)
+async def submit_token_login_code(
+    payload: TokenLoginSubmitIn = Body(...),
+) -> TokenLoginSubmitOut:
+    """提交验证码；成功后库街区凭据已写回账号组。"""
+
+    service, reason = _service("signflow.token.login.submit", "Token 获取插件未启用")
+    if service is None:
+        return TokenLoginSubmitOut(code=400, status="error", message=reason)
+
+    try:
+        result = await service(payload.sessionId, payload.code)
+    except ValueError as error:
+        return TokenLoginSubmitOut(code=400, status="error", message=str(error))
+    except Exception:
+        logger.opt(exception=True).warning("提交短信验证码失败")
+        return TokenLoginSubmitOut(
+            code=500, status="error", message="提交短信验证码失败"
+        )
+
+    return TokenLoginSubmitOut(
+        message=str(result.get("message") or "库街区凭据已保存"),
+        uid=str(result.get("uid") or ""),
+        field=str(result.get("field") or ""),
+    )
