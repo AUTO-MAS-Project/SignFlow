@@ -40,6 +40,11 @@ python -m build packages/signflow
 
 四个包分别构建、分别发布到 PyPI；附属包通过 `signflow>=0.1.0,<0.2` 依赖核心包。
 
+## 开发
+
+静态检查与测试的跑法见 [tests/README.md](tests/README.md)。测试要先准备一份 AUTO-MAS 主仓源码
+（插件依赖的 `auto_mas_core` 不是独立可安装的库），PR 的 CI 会自行稀疏检出。
+
 ## 许可证
 
 AGPL-3.0-or-later，见 [LICENSE](LICENSE)。第三方来源与许可见 [NOTICE.md](NOTICE.md)。
