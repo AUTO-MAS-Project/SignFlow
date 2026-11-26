@@ -195,9 +195,8 @@ class GachaFacade:
     ) -> tuple[list[GachaRecord], list[str]]:
         """在宿主社区客户端上跑一次协议；客户端负责代理与 DNS 回退。"""
 
-        from auto_mas_core import Plugin
-
         from app.tools.common.community.http import create_community_client
+        from auto_mas_core import Plugin
 
         proxy = Plugin.services.require("signflow.community")().proxy()
         # 客户端由宿主提供，代理、DNS 回退与 trust_env 都在里面配好了；

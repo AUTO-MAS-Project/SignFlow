@@ -26,7 +26,6 @@ import asyncio
 
 from signflow.api import NotesQueryIn, query_daily_notes
 
-
 # 宿主 `provides_services` 注册的是插件实例上的方法本身（`CallGate.wrap` 包过的
 # 那个），所以 `require(...)` 返回的就是可调用的协程方法，代发端点直接 await 它。
 # 替身必须按这个形状写，否则测出来的不是真实调用链。
@@ -107,7 +106,9 @@ def test_missing_notes_plugin_reports_disabled(monkeypatch):
 def test_invalid_account_reports_host_message(monkeypatch):
     """账号组不存在时把宿主的中文原因回给调用方。"""
 
-    _patch_services(monkeypatch, _Services(error=ValueError("未找到指定的游戏社区账号组")))
+    _patch_services(
+        monkeypatch, _Services(error=ValueError("未找到指定的游戏社区账号组"))
+    )
 
     result = asyncio.run(query_daily_notes(NotesQueryIn(accountIds=["missing"])))
 
@@ -118,7 +119,9 @@ def test_invalid_account_reports_host_message(monkeypatch):
 def test_unexpected_failure_hides_details(monkeypatch):
     """非参数类异常只回通用文案，不把堆栈或上游正文带给前端。"""
 
-    _patch_services(monkeypatch, _Services(error=RuntimeError("上游返回了内部地址 10.0.0.1")))
+    _patch_services(
+        monkeypatch, _Services(error=RuntimeError("上游返回了内部地址 10.0.0.1"))
+    )
 
     result = asyncio.run(query_daily_notes(NotesQueryIn()))
 

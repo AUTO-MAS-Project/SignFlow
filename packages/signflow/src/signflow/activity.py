@@ -62,5 +62,7 @@ class ActivityFacade:
             if account_ids is None
             else [str(item).strip() for item in account_ids if str(item).strip()]
         )
-        snapshots = await Community.query_configured_community_activity(selected or None)
+        snapshots = await Community.query_configured_community_activity(
+            selected or None
+        )
         return tuple(snapshot.to_dict() for snapshot in snapshots)
