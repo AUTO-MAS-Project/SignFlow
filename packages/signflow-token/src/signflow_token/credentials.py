@@ -131,9 +131,8 @@ def _item(platform: str, field: str, raw: str) -> dict[str, object]:
 async def _refresh_skland(raw: str, proxy: str | None) -> str:
     """用宿主实现刷新森空岛凭据：只换 token，cred 与 userId 不变。"""
 
-    from auto_mas_core.host.tools_common_community_providers import skland
-
     from app.tools.common.community.http import create_community_client
+    from auto_mas_core.host.tools_common_community_providers import skland
 
     credential = skland.parse_skland_credential(raw)
     device_id = await skland.get_cached_device_id(proxy)

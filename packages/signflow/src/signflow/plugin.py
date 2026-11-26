@@ -25,9 +25,8 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from fastapi import APIRouter
-
 from auto_mas_core import ExtensionPlugin
+from fastapi import APIRouter
 
 from .accounts import CommunityFacade
 from .activity import ActivityFacade

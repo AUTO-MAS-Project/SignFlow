@@ -1,0 +1,23 @@
+#   SignFlow: AUTO-MAS 游戏社区插件集合
+#   Copyright © 2025-2026 AUTO-MAS Team
+
+# 与 AUTO-MAS 主仓同口径：只保留语法/未定义名/导入排序这类确定性检查，
+# 不引入风格类规则，避免把上游移植代码整批刷成改动。
+
+line-length = 88
+target-version = "py312"
+extend-exclude = [
+    "build",
+    "dist",
+    "debug",
+]
+
+[lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+# E501 由 formatter 负责；F403/F405 来自星号再导出，属有意设计。
+ignore = ["E501", "F403", "F405"]
+
+[format]
+quote-style = "double"
+indent-style = "space"
