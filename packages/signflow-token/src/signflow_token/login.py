@@ -88,8 +88,8 @@ async def _persist(account_uid: str, field_name: str, credential: str) -> None:
 
     from auto_mas_core.host.core import Config
 
-    await Config.update_game_sign_account(
-        account_uid, {"GameSignAccount": {field_name: credential}}
+    await Config.update_sign_flow_account(
+        account_uid, {"SignFlowAccount": {field_name: credential}}
     )
 
 

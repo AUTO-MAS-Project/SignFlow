@@ -21,7 +21,7 @@
 
 """账号组与凭据门面：附属插件唯一的账号读取入口。
 
-宿主把账号字段、凭据字段与平台注册表集中在 `GameSignAccountFields` 与
+宿主把账号字段、凭据字段与平台注册表集中在 `SignFlowAccountFields` 与
 `_COMMUNITY_SIGN_PROVIDERS`，本模块只做只读投影，不复制第二份字段清单。
 凭据原文只在本对象内传递，调用方不得写入日志、异常消息或前端响应。
 """
@@ -101,8 +101,8 @@ class CommunityFacade:
 
         fields = self.token_fields()
         projected: list[CommunityAccount] = []
-        for raw_uid, entry in Config.ToolsConfig.GameSign_Accounts.items():
-            group = entry.GameSignAccount
+        for raw_uid, entry in Config.ToolsConfig.SignFlow_Accounts.items():
+            group = entry.SignFlowAccount
             projected.append(
                 CommunityAccount(
                     uid=str(raw_uid),
