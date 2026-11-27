@@ -3,6 +3,13 @@
 本仓库遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased]
+
+### Changed
+
+- 日常便笺采集（平台协议、角色发现、并发查询、串行锁与 300s / 30s 两级缓存）从 AUTO-MAS 本体迁入 `signflow-notes`，插件不再向宿主转发，不依赖 `signflow.activity`。
+- 核心插件下线 `signflow.activity` 服务与对应实现，只保留 `signflow.community`；便笺插件改为依赖账号与凭据门面。
+
 ## [0.1.0] - 2026-11-20
 
 ### Added

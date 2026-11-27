@@ -23,13 +23,10 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 from auto_mas_core import ExtensionPlugin
 from fastapi import APIRouter
 
 from .accounts import CommunityFacade
-from .activity import ActivityFacade
 from .api import router as community_router
 from .config import SignFlowConfig
 
@@ -37,7 +34,8 @@ from .config import SignFlowConfig
 class Plugin(ExtensionPlugin):
     """游戏社区核心插件。
 
-    只提供账号、日常便笺与平台协议门面，不直接执行签到；签到由本体内置流程完成。
+    只提供账号、凭据与平台协议门面，不直接执行签到；签到由本体内置流程完成。
+    便笺采集已经迁到 `signflow-notes` 附属插件，本插件不再转发宿主便笺实现。
     """
 
     config_class = SignFlowConfig
@@ -52,15 +50,13 @@ class Plugin(ExtensionPlugin):
     # 一个能力一个服务名：附属插件只声明自己真正要用的那一个，接口面越小越不容易被误用。
     provides_services = {
         "signflow.community": "community",
-        "signflow.activity": "query_activity",
     }
 
     def __init__(self, config=None, record=None):
-        """初始化核心插件，预先持有唯一的账号门面与便笺门面实例。"""
+        """初始化核心插件，预先持有唯一的账号门面实例。"""
 
         super().__init__(config=config, record=record)
         self._facade = CommunityFacade()
-        self._activity = ActivityFacade()
 
     def community(self) -> CommunityFacade:
         """返回社区账号与凭据门面，供附属插件取用。
@@ -70,14 +66,3 @@ class Plugin(ExtensionPlugin):
         """
 
         return self._facade
-
-    async def query_activity(
-        self, account_ids: Iterable[str] | None = None
-    ) -> tuple[dict[str, object], ...]:
-        """按账号组查询日常便笺，供附属插件取用。
-
-        暴露成协程而不是「返回门面再调用」：宿主 `CallGate` 只包住服务方法
-        本身，只有这样插件停用时才会等到在途查询真正结束。
-        """
-
-        return await self._activity.snapshots(account_ids)

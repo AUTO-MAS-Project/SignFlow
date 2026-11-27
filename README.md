@@ -14,7 +14,7 @@ AUTO-MAS 的游戏社区插件集合。游戏社区本体能力由本仓库的�
 
 | 附属插件 | 依赖的服务 | 说明 |
 | --- | --- | --- |
-| 日常便笺 | `signflow.activity` | 只读便笺查询，用不到凭据 |
+| 日常便笺 | `signflow.community` | 只读便笺查询：自带采集实现，只借账号投影与凭据字段名 |
 | 抽卡记录 | `signflow.community` | 需要账号与平台凭据 |
 | Token 获取 | `signflow.community` | 需要读写账号与凭据 |
 

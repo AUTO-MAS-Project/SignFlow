@@ -33,18 +33,35 @@ from dataclasses import dataclass, field
 __all__ = ["CommunityAccount", "CommunityFacade"]
 
 
+def _safe_text(group: object, name: str) -> str:
+    """读取单个文本字段，读不到时退回空串。
+
+    设备字段只在《绝区零》便笺里用到，解密失败不应该让整个账号组的
+    便笺查询一起失败，所以这里降级而不是抛错。
+    """
+
+    try:
+        return str(getattr(group, name, "") or "").strip()
+    except Exception:
+        return ""
+
+
 @dataclass(frozen=True)
 class CommunityAccount:
     """一个游戏社区账号组的只读投影。
 
     ``tokens`` 是按宿主凭据字段名索引的原文映射；只允许在进程内交给
     平台协议实现，禁止序列化、打印或写入任何持久化载体。
+
+    设备字段只在米游社《绝区零》便笺签名时使用，其它场景一律留空。
     """
 
     uid: str
     name: str
     enabled: bool
     tokens: dict[str, str] = field(repr=False)
+    device_id: str = field(default="", repr=False)
+    device_fp: str = field(default="", repr=False)
 
     def has_token(self, token_field: str) -> bool:
         """判断某个平台凭据是否已配置。"""
@@ -111,6 +128,8 @@ class CommunityFacade:
                     tokens={
                         name: str(getattr(group, name, "") or "") for name in fields
                     },
+                    device_id=_safe_text(group, "MiyousheDeviceId"),
+                    device_fp=_safe_text(group, "MiyousheDeviceFp"),
                 )
             )
         return tuple(projected)
