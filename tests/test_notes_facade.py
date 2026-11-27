@@ -25,9 +25,7 @@ from __future__ import annotations
 import asyncio
 
 import pytest
-
 from signflow_notes.notes import NotesFacade
-
 
 # 宿主快照的真实形状：见 app/tools/common/community/contracts.py 的
 #
