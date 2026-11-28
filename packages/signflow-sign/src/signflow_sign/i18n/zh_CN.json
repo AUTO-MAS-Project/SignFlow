@@ -1,0 +1,4 @@
+{
+  "plugins.signflow_sign.market.name": "SignFlow 签到",
+  "plugins.signflow_sign.market.summary": "承担游戏社区每日签到的执行：账号遍历、平台调用、凭据回写与完成日期标记。"
+}

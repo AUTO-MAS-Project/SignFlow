@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signflow-sign"
+version = "0.1.0"
+description = "承担游戏社区每日签到执行：账号遍历、平台调用、凭据回写与完成日期标记。"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "AGPL-3.0-or-later"
+authors = [{ name = "AUTO-MAS Team" }]
+keywords = ["auto-mas-plugin", "auto-mas-id:signflow_sign"]
+dependencies = ["auto-mas-core>=5.9.0b1,<6", "signflow>=0.1.0,<0.2"]
+
+[project.urls]
+Homepage = "https://github.com/AUTO-MAS-Project/SignFlow"
+Repository = "https://github.com/AUTO-MAS-Project/SignFlow"
+Documentation = "https://doc.auto-mas.top/developer/"
+Changelog = "https://github.com/AUTO-MAS-Project/SignFlow/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+signflow_sign = ["py.typed", "i18n/*.json"]

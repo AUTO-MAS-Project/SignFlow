@@ -34,8 +34,9 @@ from .config import SignFlowConfig
 class Plugin(ExtensionPlugin):
     """游戏社区核心插件。
 
-    只提供账号、凭据与平台协议门面，不直接执行签到；签到由本体内置流程完成。
-    便笺采集已经迁到 `signflow-notes` 附属插件，本插件不再转发宿主便笺实现。
+    只提供账号、凭据与平台协议门面，不直接执行签到：签到编排在
+    `signflow-sign` 附属插件，本插件只把账号与代理投影交给它。
+    便笺采集在 `signflow-notes` 附属插件，本插件不再转发宿主便笺实现。
     """
 
     config_class = SignFlowConfig
@@ -46,7 +47,7 @@ class Plugin(ExtensionPlugin):
     api_router = APIRouter()
     api_router.include_router(community_router)
 
-    # 附属插件（便笺 / 抽卡 / Token）以服务名依赖本插件，未启用时无法启用。
+    # 附属插件（便笺 / 签到 / 抽卡 / Token）以服务名依赖本插件，未启用时无法启用。
     # 一个能力一个服务名：附属插件只声明自己真正要用的那一个，接口面越小越不容易被误用。
     provides_services = {
         "signflow.community": "community",

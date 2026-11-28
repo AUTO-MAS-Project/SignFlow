@@ -9,6 +9,8 @@
 
 - 日常便笺采集（平台协议、角色发现、并发查询、串行锁与 300s / 30s 两级缓存）从 AUTO-MAS 本体迁入 `signflow-notes`，插件不再向宿主转发，不依赖 `signflow.activity`。
 - 核心插件下线 `signflow.activity` 服务与对应实现，只保留 `signflow.community`；便笺插件改为依赖账号与凭据门面。
+- 签到执行从 AUTO-MAS 本体迁入 `signflow-sign`：宿主只留触发、串行锁与结果写盘，插件负责账号遍历、平台调用、凭据回写与完成日期标记。
+- 核心插件的账号门面新增凭据写回与完成日期标记，签到插件经 `signflow.community` 复用，不再让宿主反向调用插件。
 
 ## [0.1.0] - 2026-11-20
 
