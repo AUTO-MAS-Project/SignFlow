@@ -1,0 +1,4 @@
+{
+  "plugins.signflow_sign.market.name": "SignFlow Sign-in",
+  "plugins.signflow_sign.market.summary": "Runs the daily community sign-in: account iteration, platform calls, credential write-back and completion date."
+}

@@ -11,7 +11,7 @@ requires-python = ">=3.12,<3.13"
 license = "AGPL-3.0-or-later"
 authors = [{ name = "AUTO-MAS Team" }]
 keywords = ["auto-mas-plugin", "auto-mas-id:signflow_gacha"]
-dependencies = ["auto-mas-core>=5.9.0b1,<6", "signflow>=0.1.0,<0.2"]
+dependencies = ["auto-mas-core>=5.10.0b2,<6", "signflow>=0.1.0,<0.2"]
 
 [project.urls]
 Homepage = "https://github.com/AUTO-MAS-Project/SignFlow"

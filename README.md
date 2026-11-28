@@ -1,7 +1,8 @@
 # SignFlow
 
 AUTO-MAS 的游戏社区插件集合。游戏社区本体能力由本仓库的核心插件承担，
-签到仍由 AUTO-MAS 本体执行；本仓库提供三个附属插件做功能补充。
+签到的触发与写盘仍在 AUTO-MAS 本体，签到执行（账号遍历、平台调用、凭据回写）
+由本仓库的附属插件承担。
 
 | 目录 | 发行包 | 插件 ID | 作用 |
 | --- | --- | --- | --- |
@@ -9,14 +10,16 @@ AUTO-MAS 的游戏社区插件集合。游戏社区本体能力由本仓库的�
 | `packages/signflow-notes` | `signflow-notes` | `signflow_notes` | 日常便笺（游戏内体力、委托、派遣等完整内容） |
 | `packages/signflow-gacha` | `signflow-gacha` | `signflow_gacha` | 抽卡记录（首批仅森空岛明日方舟） |
 | `packages/signflow-token` | `signflow-token` | `signflow_token` | Token 获取（扫码 / 短信 / 账密），受神秘入口授权门禁 |
+| `packages/signflow-sign` | `signflow-sign` | `signflow_sign` | 签到执行（账号遍历、平台调用、凭据回写与完成日期标记） |
 
 附属插件按服务名依赖核心插件，核心插件未启用时它们无法启用：
 
 | 附属插件 | 依赖的服务 | 说明 |
 | --- | --- | --- |
-| 日常便笺 | `signflow.activity` | 只读便笺查询，用不到凭据 |
+| 日常便笺 | `signflow.community` | 只读便笺查询：自带采集实现，只借账号投影与凭据字段名 |
 | 抽卡记录 | `signflow.community` | 需要账号与平台凭据 |
 | Token 获取 | `signflow.community` | 需要读写账号与凭据 |
+| 签到 | `signflow.community` | 只借账号投影、凭据写回与完成日期标记；平台协议实现仍在宿主 |
 
 ## 前端在哪里
 
@@ -29,16 +32,29 @@ AUTO-MAS 的动态前端尚未上线，插件页面仍由主程序 `frontend/src
 python scripts/link_dev.py --auto-mas D:\GitHub\AUTO-MAS
 ```
 
-脚本会在 `AUTO-MAS/plugins/` 下为四个包建立目录联接（该目录已被主仓 `.gitignore` 忽略）。
+脚本会在 `AUTO-MAS/plugins/` 下为五个包建立目录联接（该目录已被主仓 `.gitignore` 忽略）。
 用 `--unlink` 撤销。
 
 ## 构建
 
 ```powershell
-python -m build packages/signflow
+python -m build --outdir dist packages/signflow
 ```
 
-四个包分别构建、分别发布到 PyPI；附属包通过 `signflow>=0.1.0,<0.2` 依赖核心包。
+五个包分别构建、分别发布到 PyPI；附属包通过 `signflow>=0.1.0,<0.2` 依赖核心包。
+
+## 发布
+
+五个包同版本发布（lockstep）：先把五个 `packages/*/pyproject.toml` 的 `version` 与
+`CHANGELOG.md` 一起改到同一版本，再打 `vX.Y.Z` 标签推送，`.github/workflows/publish.yml`
+会并行构建五个包、校验元数据并用 PyPI 受信发布统一上传。
+
+首次发布前，仓库维护者需在 PyPI 为 `signflow`、`signflow-notes`、`signflow-gacha`、
+`signflow-token`、`signflow-sign` 各配置一次受信发布者（Environment 填 `pypi`），
+仓库侧不需要保存任何 PyPI 密钥。
+
+插件包声明 `auto-mas-core>=5.10.0b2,<6`：从这一版宿主起，账号字段才叫 `SignFlow_Accounts`，
+SDK 才带 `tools_common_community_sign` / `_contracts` / `_credentials` 三个门牌。
 
 ## 许可证
 

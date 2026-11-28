@@ -33,12 +33,15 @@ from .notes import NotesFacade
 class Plugin(ExtensionPlugin):
     """SignFlow 日常便笺附属插件。
 
-    依赖核心插件服务 `signflow.activity`：便笺数据由 AUTO-MAS 本体采集，
-    核心插件负责把宿主 `Community` 的查询能力暴露出来，本插件只做形状收敛。
-    不直接依赖 `signflow.community`（账号与凭据），因为便笺用不到凭据。
+    只依赖核心插件服务 `signflow.community`：账号投影、凭据字段名与代理地址
+    都由它提供。采集实现（平台协议、角色发现、并发请求、缓存与串行锁）在本包
+    内，宿主便笺实现迁出后不再向宿主转发。
+
+    核心插件不再提供 `signflow.activity` 服务：那条服务原是宿主版便笺的转发口，
+    本插件自带实现后用不上它，也就不存在「宿主删实现、插件回调」的回环依赖。
     """
 
-    requires = ("signflow.activity",)
+    requires = ("signflow.community",)
 
     provides_services = {"signflow.notes": "query_notes"}
 
@@ -48,14 +51,27 @@ class Plugin(ExtensionPlugin):
         super().__init__(config=config, record=record)
         self._notes = NotesFacade()
 
+    async def on_enable(self) -> None:
+        """订阅宿主配置变动信号，账号或代理一改动就清空便笺缓存。
+
+        插件没有宿主那样的配置钩子，只能自己订阅。订阅失败不阻断启用：缓存
+        只是退化成按 TTL 过期，比让整个插件起不来更合适。
+        """
+
+        self._notes.collector.attach()
+
+    async def on_disable(self) -> None:
+        """解除配置订阅并丢弃缓存，避免停用后仍持有旧快照。"""
+
+        self._notes.collector.detach()
+
     async def query_notes(
         self, account_ids: Iterable[str] | None = None
     ) -> tuple[dict[str, object], ...]:
         """按账号组查询日常便笺，由核心插件对外代发。
 
         暴露成协程而不是「返回门面再调用」：宿主 `CallGate` 只包住服务方法
-        本身，只有这样插件停用时才会等到在途查询真正结束。门面不持状态，
-        宿主已经缓存快照，这里再存一份只会让两边的失效时机打架。
+        本身，只有这样插件停用时才会等到在途查询真正结束。
         """
 
         return await self._notes.snapshots(account_ids)

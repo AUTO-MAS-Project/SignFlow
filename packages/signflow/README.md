@@ -16,8 +16,7 @@ SignFlow 是 AUTO-MAS 的游戏社区核心插件。它把账号、平台协议�
 | 服务名 | 内容 |
 | --- | --- |
 | `signflow.community` | 账号与凭据门面（平台字段清单以本体内置注册表为准） |
-| `signflow.activity` | 日常便笺查询（转发宿主 `Community`，自带缓存与串行锁） |
-| `signflow.notes` | 由日常便笺附属插件提供，核心插件代发 `POST /api/plugin/signflow/notes/query` |
+| `signflow.notes` | 由日常便笺附属插件提供（自带采集、缓存与串行锁），核心插件代发 `POST /api/plugin/signflow/notes/query` |
 
 ## 安装
 

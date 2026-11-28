@@ -1,4 +1,4 @@
-"""把 SignFlow 的四个包联接进 AUTO-MAS 的 plugins 目录，供源码联调。
+"""把 SignFlow 的五个包联接进 AUTO-MAS 的 plugins 目录，供源码联调。
 
 用法：
     python scripts/link_dev.py --auto-mas D:\\GitHub\\AUTO-MAS
@@ -16,7 +16,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-PACKAGES = ("signflow", "signflow-notes", "signflow-gacha", "signflow-token")
+PACKAGES = (
+    "signflow",
+    "signflow-notes",
+    "signflow-gacha",
+    "signflow-token",
+    "signflow-sign",
+)
 
 
 def _link(source: Path, target: Path) -> None:

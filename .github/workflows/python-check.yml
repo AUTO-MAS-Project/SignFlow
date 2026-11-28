@@ -1,0 +1,83 @@
+#   SignFlow: AUTO-MAS 游戏社区插件集合
+#   Copyright © 2025-2026 AUTO-MAS Team
+#
+#   插件包在模块级导入 auto_mas_core，而该 SDK 直接依赖 AUTO-MAS 主仓的 app.*，
+#   无法从 PyPI 单独安装，所以测试作业要先把主仓按稀疏方式检出作为宿主。
+name: Python Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.3"
+          python-version: "3.12"
+      # uvx 只下载一个 ruff 轮子，不建虚拟环境，所以这里不需要 uv sync。
+      - name: Check lint
+        run: uvx --from ruff==0.16.8 ruff check .
+      - name: Check format
+        run: uvx --from ruff==0.16.8 ruff format --check .
+
+  pytest:
+    # 只挂 Windows：auto_mas_core 经 app.config 等模块会拉到宿主 app/，
+    # 而宿主 app/utils 里存在模块级 win32 导入，Linux 上是否被触发尚未验证。
+    # 本仓先保证有一条能跑绿的基线，Linux 待单独评估后再加进矩阵。
+    name: pytest (windows-latest)
+    runs-on: windows-latest
+    env:
+      # 宿主分支：dev 合入游戏社区插件化之前，签到插件引用的三个 SDK 门牌
+      # （tools_common_community_sign / _contracts / _credentials）和 SignFlow_Accounts
+      # 字段只存在于 feat/signflow-sign-migration，指向 dev 会在收集阶段就 ImportError。
+      # 主仓那条 PR 合并后改回 dev；主仓改契约导致这里红时，先看是不是它。
+      AUTO_MAS_REF: feat/signflow-sign-migration
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out AUTO-MAS host
+        shell: pwsh
+        run: |
+          $hostDir = Join-Path $env:RUNNER_TEMP 'auto-mas-host'
+          git clone --depth=1 --filter=blob:none --sparse --branch $env:AUTO_MAS_REF `
+            https://github.com/AUTO-MAS-Project/AUTO-MAS.git $hostDir
+          # app 与 SDK 是测试真正需要的；根目录的 pyproject.toml、uv.lock 由 cone 模式自带。
+          git -C $hostDir sparse-checkout set app plugins/auto_mas_core
+          "AUTO_MAS_HOST=$hostDir" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      # 放在检出宿主之后：缓存键要落在主仓的 uv.lock 上，本仓没有锁文件。
+      - name: Set up uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.12.3"
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: "${{ runner.temp }}/auto-mas-host/uv.lock"
+      - name: Install host dependencies
+        shell: pwsh
+        run: uv sync --locked --group dev --project $env:AUTO_MAS_HOST
+      # 在 SignFlow 根目录执行，用宿主的虚拟环境跑本仓的 tests/。
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $env:AUTO_MAS_ROOT = $env:AUTO_MAS_HOST
+          uv run --project $env:AUTO_MAS_HOST --no-sync python -m pytest tests -q

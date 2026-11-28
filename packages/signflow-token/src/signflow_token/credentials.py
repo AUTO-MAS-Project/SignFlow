@@ -22,7 +22,7 @@
 
 本模块不重新实现任何上游协议：格式校验交给宿主的 validate_* 函数，刷新交给
 宿主的 refresh_skland_session_credential / refresh_taygedo_credential /
-derive_miyoushe_cookie_token，写回交给 Config.update_game_sign_account。
+derive_miyoushe_cookie_token，写回交给 Config.update_sign_flow_account。
 上游改端点或改字段时，本插件跟着宿主动，不维护第二份协议实现。
 
 凭据原文只在进程内传递：不写日志、不进异常消息、不出现在返回值里。
@@ -131,9 +131,8 @@ def _item(platform: str, field: str, raw: str) -> dict[str, object]:
 async def _refresh_skland(raw: str, proxy: str | None) -> str:
     """用宿主实现刷新森空岛凭据：只换 token，cred 与 userId 不变。"""
 
-    from auto_mas_core.host.tools_common_community_providers import skland
-
     from app.tools.common.community.http import create_community_client
+    from auto_mas_core.host.tools_common_community_providers import skland
 
     credential = skland.parse_skland_credential(raw)
     device_id = await skland.get_cached_device_id(proxy)
@@ -189,8 +188,8 @@ async def _persist(account_uid: str, field: str, raw: str) -> None:
 
     from auto_mas_core.host.core import Config
 
-    await Config.update_game_sign_account(
-        account_uid, {"GameSignAccount": {field: raw}}
+    await Config.update_sign_flow_account(
+        account_uid, {"SignFlowAccount": {field: raw}}
     )
 
 
