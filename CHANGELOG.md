@@ -5,8 +5,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- 新增 `.github/workflows/publish.yml`：打 `vX.Y.Z` 标签后并行构建五个包、校验元数据并用 PyPI 受信发布统一上传。
+
 ### Changed
 
+- 五个包的 `auto-mas-core` 下限从 `>=5.9.0b1` 抬到 `>=5.10.0b2,<6`：插件读取的账号字段叫 `SignFlow_Accounts`，签到插件还经 `tools_common_community_sign` / `_contracts` / `_credentials` 三个 SDK 门牌取宿主能力，更低的宿主装得上但用不了。
 - 日常便笺采集（平台协议、角色发现、并发查询、串行锁与 300s / 30s 两级缓存）从 AUTO-MAS 本体迁入 `signflow-notes`，插件不再向宿主转发，不依赖 `signflow.activity`。
 - 核心插件下线 `signflow.activity` 服务与对应实现，只保留 `signflow.community`；便笺插件改为依赖账号与凭据门面。
 - 签到执行从 AUTO-MAS 本体迁入 `signflow-sign`：宿主只留触发、串行锁与结果写盘，插件负责账号遍历、平台调用、凭据回写与完成日期标记。

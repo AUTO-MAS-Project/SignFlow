@@ -38,10 +38,23 @@ python scripts/link_dev.py --auto-mas D:\GitHub\AUTO-MAS
 ## 构建
 
 ```powershell
-python -m build packages/signflow
+python -m build --outdir dist packages/signflow
 ```
 
 五个包分别构建、分别发布到 PyPI；附属包通过 `signflow>=0.1.0,<0.2` 依赖核心包。
+
+## 发布
+
+五个包同版本发布（lockstep）：先把五个 `packages/*/pyproject.toml` 的 `version` 与
+`CHANGELOG.md` 一起改到同一版本，再打 `vX.Y.Z` 标签推送，`.github/workflows/publish.yml`
+会并行构建五个包、校验元数据并用 PyPI 受信发布统一上传。
+
+首次发布前，仓库维护者需在 PyPI 为 `signflow`、`signflow-notes`、`signflow-gacha`、
+`signflow-token`、`signflow-sign` 各配置一次受信发布者（Environment 填 `pypi`），
+仓库侧不需要保存任何 PyPI 密钥。
+
+插件包声明 `auto-mas-core>=5.10.0b2,<6`：从这一版宿主起，账号字段才叫 `SignFlow_Accounts`，
+SDK 才带 `tools_common_community_sign` / `_contracts` / `_credentials` 三个门牌。
 
 ## 许可证
 

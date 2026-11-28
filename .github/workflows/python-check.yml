@@ -45,8 +45,11 @@ jobs:
     name: pytest (windows-latest)
     runs-on: windows-latest
     env:
-      # 宿主分支：随 AUTO-MAS 主仓 dev 走。主仓改契约导致这里红时，先看是不是它。
-      AUTO_MAS_REF: dev
+      # 宿主分支：dev 合入游戏社区插件化之前，签到插件引用的三个 SDK 门牌
+      # （tools_common_community_sign / _contracts / _credentials）和 SignFlow_Accounts
+      # 字段只存在于 feat/signflow-sign-migration，指向 dev 会在收集阶段就 ImportError。
+      # 主仓那条 PR 合并后改回 dev；主仓改契约导致这里红时，先看是不是它。
+      AUTO_MAS_REF: feat/signflow-sign-migration
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
